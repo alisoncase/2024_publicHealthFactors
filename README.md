@@ -2,7 +2,7 @@
 Public Health - Exploration of Various Health Factors in the United States
 
 ### Team Members
-1. Alison Case
+1. Alison Case 
 
 ### Final Proposal
 1. Persona/Scenario *Tentative*
