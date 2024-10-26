@@ -3,7 +3,7 @@ Public Health - Exploration of Various Health Factors in the United States
 
 ### Team Members
 1. Alison Case 
-2. Len Kendall
+2. Leonard Kendall
 
 ### Final Proposal
 1. Persona/Scenario *Tentative*
