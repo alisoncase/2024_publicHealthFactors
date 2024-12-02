@@ -3,10 +3,11 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width">
-            <title></title>
+            <title>Exploration of Public Health Factors in the United States</title>
 
         <!--put your external stylesheet links here-->
         <link rel="stylesheet" href="css/style.css">
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
         <!--[if IE<9]>
             <link rel="stylesheet" href="css/style.ie.css">
         <![endif]-->
@@ -17,13 +18,37 @@
     </head>
 
     <body>
-        <!--put your initial page content here-->
+        <h1>Public Health Outcomes and Risk Behaviors</h1>
+        <h2>An Exploration of Various Health Factors in the United States</h2>
+        <label for="dropdown-set1">Health Outcomes:</label>
+        <select id="dropdown-set1" class="dropdown-set1">
+            <option value="teeth_lost">All teeth lost among adults aged >=65 years</option>
+            <option value="arthritis">Arthritis among adults</option>
+            <option value="cancer">Cancer (non-skin) or melanoma among adults</option>
+            <option value="copd">Chronic obstructive pulmonary disease among adults</option>
+            <option value="heart_disease">Coronary heart disease among adults</option>
+            <option value="asthma">Current asthma among adults</option>
+            <option value="depression">Depression among adults</option>
+            <option value="diabetes">Diagnosed diabetes among adults</option>
+            <option value="high_blood_pressure">High blood pressure among adults</option>
+            <option value="high_cholesterol">High cholesterol among adults who have ever been screened</option>
+            <option value="obesity">Obesity among adults</option>
+            <option value="stroke">Stroke among adults</option>
+        </select>
+        <label for="dropdown-set2">Health Risk Behaviors:</label>
+        <select id="dropdown-set2" class="dropdown-set2">
+            <option value="binge_drinking">Binge drinking among adults</option>
+            <option value="smoking">Current cigarette smoking among adults</option>
+            <option value="physical_inactivity">No leisure-time physical activity among adults</option>
+            <option value="short_sleep_duration">Short sleep duration among adults</option>
+        </select>
+        <div id="map"></div>
+        <div id="mydiv"></div>
 
-        <!--you can also use this space for internal scripts;
-        place these within <script> tags-->
-
-        <!--put your external script links here-->
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script type="text/javascript" src="lib/topojson.js"></script>
         <script type="text/javascript" src="js/main.js"></script>
         <script type="text/javascript" src="lib/jquery-3.5.1.js"></script>
+        <script src="https://unpkg.com/simple-statistics@7.8.3/dist/simple-statistics.min.js"></script>
     </body>
 </html>

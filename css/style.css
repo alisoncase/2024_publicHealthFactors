@@ -1,1 +1,27 @@
-/*insert style here*/
+h1 {
+    padding-top: 40px;
+    text-align: center;
+    font-family: 'Noto Serif', serif;
+    color: rgb(32, 32, 32);
+    font-size: x-large;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+h2 {
+    text-align: center;
+    font-family: 'Noto Serif', serif;
+    color: rgb(32, 32, 32);
+    font-size: medium;
+    padding: 10px;
+    margin-top: 10px;
+  }
+.dropdown-set1 .dropdown-set2{
+    font-family: 'Noto Serif', serif;
+    color:rgb(32, 32, 32);
+    font-size: medium;
+}
+.dropdown-set1.label .dropdown-set2.label{
+    font-family: 'Noto Serif', serif;
+    color:rgb(32, 32, 32);
+    font-size: medium;
+}
