@@ -42,14 +42,18 @@
             <option value="physical_inactivity">No leisure-time physical activity among adults</option>
             <option value="short_sleep_duration">Short sleep duration among adults</option>
         </select>
-        <div id="map-container"></div>        
-        <div id="map"></div>
-        <div id="mydiv"></div>
+        <div id="dropdown-container"></div>
+        <!--<div id="map-container"></div>  -->      
+        <div id="mainMap"></div>
 
-        <!--<script src="https://d3js.org/d3.v7.min.js"></script>-->
+
+        <!-- Include the D3.js library from a CDN -->
+         <script src="https://d3js.org/d3.v7.min.js"></script>
+        <!-- Include the d3-geo-projection library from a CDN -->
+         <script src="https://d3js.org/d3-geo-projection.v3.min.js"></script>
         <script type="text/javascript" src="lib/topojson.js"></script>
         <script type="text/javascript" src="lib/jquery-3.5.1.js"></script>
-        <script type="text/javascript" src="lib/d3.v7.min.js"></script>
+        <!--<script type="text/javascript" src="lib/d3.v7.min.js"></script>-->
         <script type="text/javascript" src="lib/plot.min.js"></script>
         <script type="text/javascript" src="js/main.js"></script>
                 <script src="https://unpkg.com/simple-statistics@7.8.3/dist/simple-statistics.min.js"></script>
