@@ -7,7 +7,7 @@
     //var topology = d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/counties-albers-10m.json')
     //var topology = d3.json("data/counties.topojson") 
     
-    //pseudo-global variables
+    //pseudo-global variables 
     var attrArray = ["teeth_lost", 
       "arthritis", 
       "cancer",
@@ -37,15 +37,16 @@
       height = 600;
     
       // Create new svg container for the main U.S. map
-      var mainMap = d3.select("body")
+      var mainMap = d3.select("body") //originally said "body" changed to "mainMap"
         .append("svg")
         .attr("class", "mainMap")
+        //.attr("d", path)
         .attr("width", width)
         .attr("height", height);
     
       // Set main map projection to U.S. Albers to position HI and AK below CONUS
       var projection = d3.geoAlbersUsa()
-        .scale(1000)
+        .scale(1100)
         .translate([width / 2, height / 2]);
         //use the following for counties albers file
         //.scale(1300)
@@ -58,30 +59,26 @@
       //use Promise.all to parallelize asynchronous data loading
       var promises = [];    
         promises.push(d3.csv("data/public_health_data.csv")); //load attributes from csv    
-        promises.push(d3.json("data/counties.topojson")); //load counties spatial data
-        Promise.all(promises).then(function(data) {
+        promises.push(d3.json("data/continentalCounties.topojson")); //load counties spatial data
+       
+        Promise.all(promises).then(callback);
           //var csvData = data[0];
           //var counties = data[1];
           //  console.log(csvData);
           //  console.log(counties);
-            callback(mainMap, path, data); 
-        });
-    
-      // Set up callback function
-      function callback(mainMap, path, data) {
-          var csvData = data[0],
-              counties = data[1];
-          console.log(csvData);
-          console.log(counties);
-    
-          //translate TopoJSON polygons
-          var countiesUS = topojson.feature(counties, counties.objects.collection).features;
-          //examine the results
-            console.log(countiesUS)
-                  
-          //join csv data to GeoJSON enumeration units
-          countiesUS = joinData(countiesUS, csvData);
-            console.log(countiesUS)
+          //  callback(mainMap, path, data); 
+
+            function callback(data) {
+                var csvData = data[0], counties = data[1]; 
+            
+            //translate TopoJSON polygons
+            var countiesUS = topojson.feature(counties, counties.objects.collection).features;
+            //examine the results
+                console.log(countiesUS)
+     
+            //join csv data to GeoJSON enumeration units
+            countiesUS = joinData(countiesUS, csvData);
+                //console.log(countiesUS)
     
           //add states to map, if using counties albers file
           // consider if/how to use D3 mesh function for state outlines instead

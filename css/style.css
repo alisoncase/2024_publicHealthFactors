@@ -25,6 +25,10 @@ h2 {
     color:rgb(32, 32, 32);
     font-size: medium;
 }
-.counties {
-  fill: white;
+
+.mainMap {
+  fill: none;
+  stroke: #000;
+  stroke-width: 0.5px;
+  stroke-linecap: round;
 }
