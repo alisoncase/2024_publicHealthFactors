@@ -58,7 +58,7 @@ function setMap(){
   //use Promise.all to parallelize asynchronous data loading
   var promises = [];    
     promises.push(d3.csv("data/public_health_data.csv")); //load attributes from csv    
-    promises.push(d3.json("data/counties.topojson")); //load counties spatial data
+    promises.push(d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/counties-albers-10m.json')); //load counties spatial data
     Promise.all(promises).then(function(data) {
       //var csvData = data[0];
       //var counties = data[1];
@@ -75,7 +75,7 @@ function setMap(){
       console.log(counties);
 
       //translate TopoJSON polygons
-      var countiesUS = topojson.feature(counties, counties.objects.collection).features;
+      var countiesUS = topojson.feature(counties, counties.objects.counties).features;
       //examine the results
         console.log(countiesUS)
               
@@ -115,7 +115,7 @@ function joinData(countiesUS, csvData){
       for (var a=0; a<countiesUS.length; a++){
 
           var geojsonProps = countiesUS[a].properties; //the current county geojson properties
-          var geojsonKey = geojsonProps.CODE_LOCAL; //the geojson primary key
+          var geojsonKey = geojsonProps.id; //the geojson primary key
 
           //where primary keys match, transfer csv data to geojson properties object
           if (geojsonKey == csvKey){  
