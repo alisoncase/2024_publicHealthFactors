@@ -24,8 +24,10 @@
     "smoking",
     "physical_inactivity",
     "short_sleep_duration"]; // list of attributes
-  var expressed = attrArray[0]; //initial attribute
-  
+  // Set initial variables
+  var initialFirstVariable = attrArray[10];
+  var initialSecondVariable = attrArray[14];
+
   //begin script when window loads
   window.onload = setMap();
   
@@ -60,25 +62,18 @@
     var promises = [];    
       promises.push(d3.csv("data/public_health_data.csv")); //load attributes from csv    
       promises.push(d3.json("data/continentalCounties.topojson")); //load counties spatial data
-     
       Promise.all(promises).then(callback);
-        //var csvData = data[0];
-        //var counties = data[1];
-        //  console.log(csvData);
-        //  console.log(counties);
-        //  callback(mainMap, path, data); 
 
-          function callback(data) {
-              var csvData = data[0], counties = data[1]; 
+      function callback(data) {
+          var csvData = data[0], counties = data[1]; 
           
-          //translate TopoJSON polygons
-          var countiesUS = topojson.feature(counties, counties.objects.collection).features;
-          //examine the results
-              console.log(countiesUS)
-   
-          //join csv data to GeoJSON enumeration units
-          countiesUS = joinData(countiesUS, csvData);
-              //console.log(countiesUS)
+        //translate TopoJSON polygons
+        var countiesUS = topojson.feature(counties, counties.objects.collection).features;
+          
+        //join csv data to GeoJSON enumeration units
+        countiesUS = joinData(countiesUS, csvData);
+            //examine the results
+            console.log(countiesUS)
   
         //add states to map, if using counties albers file
         // consider if/how to use D3 mesh function for state outlines instead
@@ -86,18 +81,15 @@
         //.datum(countiesUS)
         //.attr("class", "states")
         //.attr("d", path);
-        
-        //add enumeration units to the map
-        setEnumerationUnits(countiesUS, mainMap, path, colorScale);
-    
+
         //add dropdown menu for attribute selection
         createDropdown(csvData);
-  
-        var firstVariable = d3.select("#dropdown-set1").property("value");
-        var secondVariable = d3.select("#dropdown-set2").property("value");
-  
-        //create the color scale
-        var colorScale = makeColorScale(csvData, firstVariable, secondVariable);
+        
+        // Call makeColorScale to create the initial color scale
+        var colorScale = makeColorScale(csvData);
+        
+        //add enumeration units to the map
+        setEnumerationUnits(countiesUS, mainMap, path, colorScale, initialFirstVariable, initialSecondVariable);
     };
   }; //end of setMap()
   
@@ -125,22 +117,21 @@
         };
     }
     return countiesUS
-  };
+  }; // end of function joinData
   
-  function makeColorScale(csvData, firstVariable, secondVariable) {
+  function makeColorScale(csvData) {
   
     // Create quantile breaks for each variable
-    var numQuantiles = 5;
+    var numQuantiles = 3;
     const firstValues = [];
     const secondValues = [];
-  
-    for (let i = 0; i < csvData.length; i++) {
-      const dataPoint = csvData[i];
-      firstValues.push(dataPoint[firstVariable]);
-      secondValues.push(dataPoint[secondVariable]);
-    }
-    var firstQuantiles = d3.scaleQuantile()
-      .domain(firstValues)
+      for (let i = 0; i < csvData.length; i++) {
+        var dataPoint = csvData[i];
+        firstValues.push(dataPoint[initialFirstVariable]);
+        secondValues.push(dataPoint[initialSecondVariable]);
+   }
+   var firstQuantiles = d3.scaleQuantile()
+     .domain(firstValues)
       .range(d3.range(numQuantiles));
   
     var secondQuantiles = d3.scaleQuantile()
@@ -156,45 +147,28 @@
       ]);
     }
   
-    // Create a color range using an ordinal scale
-    var colorRange = d3.scaleOrdinal()
+    // Modify the global colorScale variable
+    var colorScale= d3.scaleOrdinal()
       .domain(d3.range(numQuantiles * numQuantiles))
       .range([
-        "#f2f0f7", // lightest color
-        "#cbc9e2",
-        "#9e9ac8",
-        "#756bb1",
-        "#54278f", // darkest color
-        "#deebf7", // another light color
-        "#c6dbef",
-        "#99b4e2",
-        "#6c7aac", // mid color range
-        "#43497e",
-        "#d0e0e3", // ... and so on
-        "#b2becc",
-        "#8ca6b6",
-        "#63799a",
-        "#3b5378"
-      ]);
+        "#e8e8e8","#ace4e4","#5ac8c8",
+        "#dfb0d6","#a5add3","#5698b9",
+        "#be64ac","#8c62aa","#3b4994"]
+      );
   
     // Define a function to assign colors based on quantile indices
     var getColor = (d) => {
       var firstIndex = d[0];
       var secondIndex = d[1];
       var combinedIndex = firstIndex * numQuantiles + secondIndex;
-      return colorRange(combinedIndex);
+      return colorScale(combinedIndex);
     };
+    // Return the getColor function
+    return getColor;
+  }; // end of function makeColorScale
   
-    // Return a function that assigns colors based on the bivariate data
-    return (d) => getColor(bivariateValues[data.indexOf(d)]);
-  }
-  
-  function updateMap() {
-    var firstVariable = d3.select("#dropdown-set1").property("value");
-    var secondVariable = d3.select("#dropdown-set2").property("value");
-    
-    var colorScale = makeColorScale(csvData, firstVariable, secondVariable);
-  
+  function updateMap(csvData, firstVariable, secondVariable) {
+ 
     // Update colors of enumeration units
     d3.selectAll(".counties")
       .transition()
@@ -208,54 +182,79 @@
         
         return fillColor || "#ccc"; // Default color for missing data
       });
-  };
+  };// end of function updateMap
   
   function createDropdown(csvData) {
     var dropdownContainer = d3.select("#dropdown-container");
   
+    // Initialize variables
+    var firstVariable = "obesity";
+    var secondVariable = "physical_inactivity";
+  
     // Create the first dropdown
+    dropdownContainer.append("label")
+      .text("Health Outcomes:");
     var dropdown1 = dropdownContainer.append("select")
       .attr("id", "dropdown-set1");
   
     dropdown1.selectAll("option")
       .data([
-        "teeth_lost", "arthritis", "cancer", "copd", "heart_disease",
-        "asthma", "depression", "diabetes", "high_blood_pressure",
-        "high_cholesterol", "obesity", "stroke"
+        { value: "teeth_lost", text: "All teeth lost among adults aged >=65 years" },
+        { value: "arthritis", text: "Arthritis among adults" },
+        { value: "cancer", text: "Cancer (non-skin) or melanoma among adults" },
+        { value: "copd", text: "Chronic obstructive pulmonary disease among adults" },
+        { value: "heart_disease", text: "Coronary heart disease among adults" },
+        { value: "asthma", text: "Current asthma among adults" },
+        { value: "depression", text: "Depression among adults" },
+        { value: "high_blood_pressure", text: "High blood pressure among adults" },
+        { value: "high_cholesterol", text: "High cholesterol among adults who have ever been screened" },
+        { value: "obesity", text: "Obesity among adults" },
+        { value: "stroke", text: "Stroke among adults" }
       ])
       .enter()
       .append("option")
-      .text(d => d)
-      .attr("value", d => d);
+      .text(d => d.text)
+      .attr("value", d => d.value)
+      .attr("title", d => d.text);
   
-    // Set initial selected option for dropdown 1 
-    d3.select("#dropdown-set1").property("value", "diabetes"); 
+    // Set initial selected option for dropdown 1
+    dropdown1.property("value", firstVariable);
   
     // Create the second dropdown
+    dropdownContainer.append("label")
+    .text("Health Risk Behaviors:");
     var dropdown2 = dropdownContainer.append("select")
       .attr("id", "dropdown-set2");
   
     dropdown2.selectAll("option")
-      .data(["binge_drinking", "smoking", "physical_inactivity", "short_sleep_duration"])
+      .data([
+        { value: "binge_drinking", text: "Binge drinking among adults" },
+        { value: "smoking", text: "Current cigarette smoking among adults" },
+        { value: "physical_inactivity", text: "No leisure-time physical activity among adults" },
+        { value: "short_sleep_duration", text: "Short sleep duration among adults" }
+      ])
       .enter()
       .append("option")
-      .text(d => d)
-      .attr("value", d => d);
+      .text(d => d.text)
+      .attr("value", d => d.value)
+      .attr("title", d => d.text);
   
-    // Set initial selected option for dropdown 2 
-    d3.select("#dropdown-set2").property("value", "physical_inactivity"); 
+    // Set initial selected option for dropdown 2
+    dropdown2.property("value", secondVariable);
   
     // Add event listeners to the dropdowns
     dropdown1.on("change", () => {
-      updateMap();
+      firstVariable = d3.select("#dropdown-set1").property("value");
+      updateMap(csvData, firstVariable, secondVariable);
     });
   
     dropdown2.on("change", () => {
-      updateMap();
+      secondVariable = d3.select("#dropdown-set2").property("value");
+      updateMap(csvData, firstVariable, secondVariable);
     });
-  };
+  }; // end of function createDropdown
   
-  function setEnumerationUnits(countiesUS, mainMap, path, colorScale){
+  function setEnumerationUnits(countiesUS, mainMap, path, colorScale, firstVariable, secondVariable){
   
     //add counties to map
     var enumerationUnits = mainMap.selectAll(".counties")
@@ -265,26 +264,26 @@
         .attr("class", function(d){
             return "counties" + d.properties.CODE_LOCAL;})
         .attr("d", path)
-        // TO DO: Re-write this .style section
-        //.style("fill", function(d){
-        //    var value = d.properties[expressed];
-        //    if(value) {
-        //        return makeColorScale(d.properties[expressed]);
-        //    } else {
-        //        console.warn("Missing or invalid value for:", d.properties.CODE_LOCAL)
-        //        return "#ccc";
-        //    }               
-        //})
-        //.on("mouseover", function(event, d){
-        //    highlight(d.properties);
-        //})
-        //.on("mouseout", function(event, d){
-        //    dehighlight(d.properties);
-        //})
-        //.on("mousemove", moveLabel);
-    //var desc = enumerationUnits.append("desc")
-      //  .text('{"stroke": "#969696", "stroke-width": "1.5px"}');
-  };
+        .style("fill", function(d) {
+          var combinedValue = [d.properties[firstVariable], d.properties[secondVariable]];
+          if(combinedValue) {
+              return makeColorScale([d.properties[firstVariable], d.properties[secondVariable]]);
+          } else {
+              console.warn("Missing or invalid value for:", d.properties.CODE_LOCAL)
+              return "#ccc";
+          }
+        })
+        .on("mouseover", function(event, d){
+            highlight(d.properties);
+        })
+        .on("mouseout", function(event, d){
+            dehighlight(d.properties);
+        })
+        .on("mousemove", moveLabel);
+    var desc = enumerationUnits.append("desc")
+        .text('{"stroke": "#969696", "stroke-width": "1.5px"}');
+  };  // end of function setEnumerationUnits
+  
   
   //This block is from D3 bivariate example, and has been incporated into makeColorScale
   // Function to calculate low to high thresholds for diabetes variable
@@ -361,8 +360,7 @@
         .style("top", y + "px");
   };
   
-  
-  
+    
   //function to highlight enumeration units
   function highlight(props){
     //change stroke
@@ -395,9 +393,8 @@
     d3.select(".infolabel")
     .remove();
   };
-  
-  
-  // Set up function for bivariate legend, adapted from https://observablehq.com/
+    
+  // Set up function for bivariate legend, from https://observablehq.com/
   //function chart(Plot,scheme,d3,label,data,topojson,us,bivariateClass,states,svg)
   //{
   //  const legend = Plot.plot({

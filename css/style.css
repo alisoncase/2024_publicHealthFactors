@@ -32,3 +32,8 @@ h2 {
   stroke-width: 0.5px;
   stroke-linecap: round;
 }
+.counties {
+  stroke: #969696;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
