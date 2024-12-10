@@ -42,7 +42,7 @@
     var mainMap = d3.select("body") //originally said "body" changed to "mainMap"
       .append("svg")
       .attr("class", "mainMap")
-      //.attr("d", path)
+      .attr("d", path) // This was commented out, but now added back in to define the path of the map container
       .attr("width", width)
       .attr("height", height);
   
@@ -90,6 +90,9 @@
         
         //add enumeration units to the map
         setEnumerationUnits(countiesUS, mainMap, path, colorScale, initialFirstVariable, initialSecondVariable);
+
+        // Call updateMap with the color scale as an argument
+        updateMap(csvData, initialFirstVariable, initialSecondVariable, colorScale);
     };
   }; //end of setMap()
   
@@ -155,19 +158,22 @@
         "#dfb0d6","#a5add3","#5698b9",
         "#be64ac","#8c62aa","#3b4994"]
       );
-  
+    return colorScale;
+    //This block is potentially redundant. Commenting it out for debugging purposes.
     // Define a function to assign colors based on quantile indices
-    var getColor = (d) => {
-      var firstIndex = d[0];
-      var secondIndex = d[1];
-      var combinedIndex = firstIndex * numQuantiles + secondIndex;
-      return colorScale(combinedIndex);
-    };
+    //var getColor = (d) => {
+    //  var firstIndex = d[0];
+    //  var secondIndex = d[1];
+    //  var combinedIndex = firstIndex * numQuantiles + secondIndex;
+    //  return colorScale(combinedIndex);
+    //};
     // Return the getColor function
-    return getColor;
+    //return getColor;
   }; // end of function makeColorScale
   
-  function updateMap(csvData, firstVariable, secondVariable) {
+  function updateMap(csvData, firstVariable, secondVariable, colorScale) {
+
+   // var colorScale = makeColorScale(csvData);
  
     // Update colors of enumeration units
     d3.selectAll(".counties")
@@ -176,26 +182,23 @@
       .style("fill", function(d) {
         // Combine data values for both variables
         var combinedValue = [d.properties[firstVariable], d.properties[secondVariable]];
-        
+        return colorScale(combinedValue);        
         // Use the color scale to get the fill color
-        var fillColor = makeColorScale(combinedValue);
-        
-        return fillColor || "#ccc"; // Default color for missing data
+        //var fillColor = makeColorScale(combinedValue);        
+        //return fillColor || "#ccc"; // Default color for missing data
       });
   };// end of function updateMap
   
   function createDropdown(csvData) {
+    // Access existing HTML elements with D3.js
     var dropdownContainer = d3.select("#dropdown-container");
+    var dropdown1 = d3.select("#dropdown-set1");
+    var dropdown2 = d3.select("#dropdown-set2");
   
     // Initialize variables
     var firstVariable = "obesity";
     var secondVariable = "physical_inactivity";
   
-    // Create the first dropdown
-    dropdownContainer.append("label")
-      .text("Health Outcomes:");
-    var dropdown1 = dropdownContainer.append("select")
-      .attr("id", "dropdown-set1");
   
     dropdown1.selectAll("option")
       .data([
@@ -220,13 +223,7 @@
     // Set initial selected option for dropdown 1
     dropdown1.property("value", firstVariable);
   
-    // Create the second dropdown
-    dropdownContainer.append("label")
-    .text("Health Risk Behaviors:");
-    var dropdown2 = dropdownContainer.append("select")
-      .attr("id", "dropdown-set2");
-  
-    dropdown2.selectAll("option")
+      dropdown2.selectAll("option")
       .data([
         { value: "binge_drinking", text: "Binge drinking among adults" },
         { value: "smoking", text: "Current cigarette smoking among adults" },
@@ -267,25 +264,102 @@
         .style("fill", function(d) {
           var combinedValue = [d.properties[firstVariable], d.properties[secondVariable]];
           if(combinedValue) {
-              return makeColorScale([d.properties[firstVariable], d.properties[secondVariable]]);
-          } else {
+              //return makeColorScale([d.properties[firstVariable], d.properties[secondVariable]]);
+              return colorScale(combinedValue);
+            } else {
               console.warn("Missing or invalid value for:", d.properties.CODE_LOCAL)
               return "#ccc";
           }
         })
         .on("mouseover", function(event, d){
-            highlight(d.properties);
+            highlight(d.properties, firstVariable, secondVariable);
         })
         .on("mouseout", function(event, d){
             dehighlight(d.properties);
         })
         .on("mousemove", moveLabel);
-    var desc = enumerationUnits.append("desc")
-        .text('{"stroke": "#969696", "stroke-width": "1.5px"}');
+    // Commenting this out, because it does not seem to do anything.
+    //var desc = enumerationUnits.append("desc")
+    //    .text('{"stroke": "#969696", "stroke-width": "1.5px"}');
   };  // end of function setEnumerationUnits
   
+    
+  //function to create dynamic label
+  function setLabel(props, firstVariable, secondVariable){
+    //label content
+    var labelAttribute = `
+      <h1>${props[firstVariable].toFixed(2)}%</h1>
+      <b>${firstVariable}</b><br>
+      <h1>${props[secondVariable].toFixed(2)}%</h1>
+      <b>${secondVariable}</b><br>
+      <h1>${props.NAME_ALT}, ${props.REGION}</h1>`;
   
-  //This block is from D3 bivariate example, and has been incporated into makeColorScale
+    //create info label div
+    var infolabel = d3.select("body")
+        .append("div")
+        .attr("class", "infolabel")
+        .html(labelAttribute);
+  
+  };
+  
+  //function to move info label with mouse
+  function moveLabel(event){
+    //get width of label
+    var labelWidth = d3.select(".infolabel")
+        .node()
+        .getBoundingClientRect()
+        .width;
+  
+    //use coordinates of mousemove event to set label coordinates
+    var x1 = event.clientX + 2,
+        y1 = event.clientY - 2,
+        x2 = event.clientX - labelWidth - 2,
+        y2 = event.clientY + 2;
+  
+    //horizontal label coordinate, testing for overflow
+    var x = event.clientX > window.innerWidth - labelWidth - 2 ? x2 : x1; 
+    //vertical label coordinate, testing for overflow
+    var y = event.clientY < 2 ? y2 : y1; 
+  
+    d3.select(".infolabel")
+        .style("left", x + "px")
+        .style("top", y + "px");
+  };
+      
+  //function to highlight enumeration units
+  function highlight(props, firstVariable, secondVariable){
+    //change stroke
+    var selected = d3.selectAll("." + props.NAME_ALT)
+        .style("stroke", "black")
+        .style("stroke-width", "2");
+    setLabel(props, firstVariable, secondVariable);
+  };
+  
+  //function to reset the element style on mouseout
+  function dehighlight(props){
+    var selected = d3.selectAll("." + props.NAME_ALT)
+        .style("stroke", function(){
+            return getStyle(this, "stroke")
+        })
+        .style("stroke-width", function(){
+            return getStyle(this, "stroke-width")
+        });
+  
+    function getStyle(element, styleName){
+        var styleText = d3.select(element)
+            .select("desc")
+            .text();
+  
+        var styleObject = JSON.parse(styleText);
+  
+        return styleObject[styleName];
+    };
+    //remove info label
+    d3.select(".infolabel")
+    .remove();
+  };
+
+    //This block is from D3 bivariate example, and has been incporated into makeColorScale
   // Function to calculate low to high thresholds for diabetes variable
   //function diabetes_thresholds(d3,data){return(
   //  d3.scaleQuantile(data.mainMap(d => d.diabetes), [0, 1, 2]).quantiles()
@@ -317,82 +391,6 @@
   //    "#dfb0d6","#a5add3","#5698b9",
   //    "#be64ac","#8c62aa","#3b4994"]
   //  )};
-  
-  //function to create dynamic label
-  function setLabel(props){
-    //label content
-    var labelAttribute = "<h1>" + props[expressed].toFixed(2) + 
-    "%</h1><b>" + expressed + "</b>";
-  
-    //create info label div
-    var infolabel = d3.select("body")
-        .append("div")
-        .attr("class", "infolabel")
-        .attr("id", props.name_alt + "_label")
-        .html(labelAttribute);
-  
-    var countyName = infolabel.append("div")
-        .attr("class", "labelname")
-        .html(props.name_alt);
-  };
-  
-  //function to move info label with mouse
-  function moveLabel(event){
-    //get width of label
-    var labelWidth = d3.select(".infolabel")
-        .node()
-        .getBoundingClientRect()
-        .width;
-  
-    //use coordinates of mousemove event to set label coordinates
-    var x1 = event.clientX + 2,
-        y1 = event.clientY - 2,
-        x2 = event.clientX - labelWidth - 2,
-        y2 = event.clientY + 2;
-  
-    //horizontal label coordinate, testing for overflow
-    var x = event.clientX > window.innerWidth - labelWidth - 2 ? x2 : x1; 
-    //vertical label coordinate, testing for overflow
-    var y = event.clientY < 2 ? y2 : y1; 
-  
-    d3.select(".infolabel")
-        .style("left", x + "px")
-        .style("top", y + "px");
-  };
-  
-    
-  //function to highlight enumeration units
-  function highlight(props){
-    //change stroke
-    var selected = d3.selectAll("." + props.NAME_ALT)
-        .style("stroke", "black")
-        .style("stroke-width", "2");
-    setLabel(props);
-  };
-  
-  //function to reset the element style on mouseout
-  function dehighlight(props){
-    var selected = d3.selectAll("." + props.NAME_ALT)
-        .style("stroke", function(){
-            return getStyle(this, "stroke")
-        })
-        .style("stroke-width", function(){
-            return getStyle(this, "stroke-width")
-        });
-  
-    function getStyle(element, styleName){
-        var styleText = d3.select(element)
-            .select("desc")
-            .text();
-  
-        var styleObject = JSON.parse(styleText);
-  
-        return styleObject[styleName];
-    };
-    //remove info label
-    d3.select(".infolabel")
-    .remove();
-  };
     
   // Set up function for bivariate legend, from https://observablehq.com/
   //function chart(Plot,scheme,d3,label,data,topojson,us,bivariateClass,states,svg)

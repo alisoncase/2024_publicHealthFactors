@@ -37,3 +37,26 @@ h2 {
   stroke-width: 1.5;
   stroke-linecap: round;
 }
+.infolabel {    
+  margin: 0 20px 0 0;    
+  position: absolute;
+  height: 50px;
+  min-width: 100px;
+  color: #fff;
+  background-color: #999;
+  border: solid thin #fff;
+  padding: 5px 10px;
+  top: -15px;
+  font-family: 'Noto sans', sans-serif;
+  font-size: .8em;
+}
+
+.infolabel h1 {
+  margin: 0 20px 0 0;
+  padding: 0;
+  display: inline-block;
+  line-height: 1em;
+  font-family: 'Noto sans', sans-serif;
+  font-size: .8em;
+  color: #fff;
+}
