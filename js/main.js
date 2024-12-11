@@ -158,6 +158,10 @@
         "#dfb0d6","#a5add3","#5698b9",
         "#be64ac","#8c62aa","#3b4994"]
       );
+      console.log("First quantile breaks:", firstQuantiles.domain());
+      console.log("Second quantile breaks:", secondQuantiles.domain());
+      console.log("Color scale domain:", colorScale.domain());
+      console.log("Color scale range:", colorScale.range());
     return colorScale;
     //This block is potentially redundant. Commenting it out for debugging purposes.
     // Define a function to assign colors based on quantile indices
@@ -182,7 +186,9 @@
       .style("fill", function(d) {
         // Combine data values for both variables
         var combinedValue = [d.properties[firstVariable], d.properties[secondVariable]];
-        return colorScale(combinedValue);        
+        //return colorScale(combinedValue); 
+        var color = colorScale(combinedValue);
+        d3.select(this).style("fill", color);  // Update style directly       
         // Use the color scale to get the fill color
         //var fillColor = makeColorScale(combinedValue);        
         //return fillColor || "#ccc"; // Default color for missing data
@@ -265,10 +271,14 @@
           var combinedValue = [d.properties[firstVariable], d.properties[secondVariable]];
           if(combinedValue) {
               //return makeColorScale([d.properties[firstVariable], d.properties[secondVariable]]);
-              return colorScale(combinedValue);
+              //return colorScale(combinedValue);
+              var color = colorScale(combinedValue);
+              console.log("County:", d.properties.NAME_ALT, "Combined Value:", combinedValue, "Color:", color);
+              d3.select(this).style("fill", color);  // Update style directly
             } else {
               console.warn("Missing or invalid value for:", d.properties.CODE_LOCAL)
-              return "#ccc";
+              //return "#ccc";
+              d3.select(this).style("fill", "#ccc");
           }
         })
         .on("mouseover", function(event, d){
@@ -277,7 +287,7 @@
         .on("mouseout", function(event, d){
             dehighlight(d.properties);
         })
-        .on("mousemove", moveLabel);
+        .on("mousemove", moveLabel);        
     // Commenting this out, because it does not seem to do anything.
     //var desc = enumerationUnits.append("desc")
     //    .text('{"stroke": "#969696", "stroke-width": "1.5px"}');

@@ -25,16 +25,27 @@ h2 {
     color:rgb(32, 32, 32);
     font-size: medium;
 }
-
 .mainMap {
   fill: none;
-  stroke: #000;
+  stroke: #a0a0a0;
   stroke-width: 0.5px;
   stroke-linecap: round;
+  position: relative;
+  border: none;
+  box-shadow: none; 
+  margin: 0; 
+  padding: 0; 
+}
+/* For insets (HI and AK): */
+.mainMap path {
+  border: none; /* Remove border around inset paths */
+  box-shadow: none; /* Remove box shadow around inset paths */
 }
 .counties {
-  stroke: #969696;
-  stroke-width: 1.5;
+  opacity: .8;
+  stroke: #a0a0a0;
+  stroke-width: .8;
+  stroke-opacity: .1;
   stroke-linecap: round;
 }
 .infolabel {    
@@ -59,4 +70,16 @@ h2 {
   font-family: 'Noto sans', sans-serif;
   font-size: .8em;
   color: #fff;
+}
+.credits{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: left;
+  padding-top: 40px;
+  font-family: 'Noto Sans', sans-serif;
+  color:rgb(32, 32, 32);
+  font-size: x-small;
+  padding: 10px;
 }
