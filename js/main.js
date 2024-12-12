@@ -61,14 +61,14 @@
     //use Promise.all to parallelize asynchronous data loading
     var promises = [];    
       promises.push(d3.csv("data/public_health_data.csv")); //load attributes from csv    
-      promises.push(d3.json("data/continentalCounties.topojson")); //load counties spatial data
+      promises.push(d3.json("data/countiesNew.topojson")); //load counties spatial data, includes counties and CT COGS
       Promise.all(promises).then(callback);
 
       function callback(data) {
           var csvData = data[0], counties = data[1]; 
           
         //translate TopoJSON polygons
-        var countiesUS = topojson.feature(counties, counties.objects.collection).features;
+        var countiesUS = topojson.feature(counties, counties.objects.countiesNew2).features;
           
         //join csv data to GeoJSON enumeration units
         countiesUS = joinData(countiesUS, csvData);

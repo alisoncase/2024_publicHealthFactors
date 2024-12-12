@@ -83,3 +83,11 @@ h2 {
   font-size: x-small;
   padding: 10px;
 }
+#legend-image {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-15%);
+  width: 200px;
+  height: auto; 
+}
