@@ -92,7 +92,7 @@
         setEnumerationUnits(countiesUS, mainMap, path, colorScale, initialFirstVariable, initialSecondVariable);
 
         // Call updateMap with the color scale as an argument
-        updateMap(csvData, initialFirstVariable, initialSecondVariable, colorScale);
+        //updateMap(csvData, initialFirstVariable, initialSecondVariable, colorScale);
     };
   }; //end of setMap()
   
@@ -281,11 +281,12 @@
               var color = colorScale(combinedValue);
               //console.log("County:", d.properties.NAME_ALT, "Combined Value:", combinedValue, "Color:", color);
               d3.select(this).style("fill", color);  // Update style directly
+              //return color
             } else {
               console.warn("Missing or invalid value for:", d.properties.CODE_LOCAL)
               //return "#ccc";
               d3.select(this).style("fill", "#ccc");
-          }
+            }
         })
         .on("mouseover", function(event, d){
             highlight(d.properties, firstVariable, secondVariable);
@@ -294,7 +295,8 @@
             dehighlight(d.properties);
         })
         .on("mousemove", moveLabel);        
-    // Commenting this out, because it does not seem to do anything.
+    // Commenting this out. It's residual code from Lab 2 that isn't necessary here since we only have one visualization.
+    // add style descriptor to each path
     //var desc = enumerationUnits.append("desc")
     //    .text('{"stroke": "#969696", "stroke-width": "1.5px"}');
   };  // end of function setEnumerationUnits
@@ -327,15 +329,15 @@
         .width;
   
     //use coordinates of mousemove event to set label coordinates
-    var x1 = event.clientX + 2,
-        y1 = event.clientY - 2,
-        x2 = event.clientX - labelWidth - 2,
-        y2 = event.clientY + 2;
+    var x1 = event.clientX + 10,
+        y1 = event.clientY - 75,
+        x2 = event.clientX - labelWidth - 10,
+        y2 = event.clientY + 25;
   
     //horizontal label coordinate, testing for overflow
-    var x = event.clientX > window.innerWidth - labelWidth - 2 ? x2 : x1; 
+    var x = event.clientX > window.innerWidth - labelWidth - 20 ? x2 : x1; 
     //vertical label coordinate, testing for overflow
-    var y = event.clientY < 2 ? y2 : y1; 
+    var y = event.clientY < 75 ? y2 : y1; 
   
     d3.select(".infolabel")
         .style("left", x + "px")
@@ -345,7 +347,8 @@
   //function to highlight enumeration units
   function highlight(props, firstVariable, secondVariable){
     //change stroke
-    var selected = d3.selectAll("." + props.NAME_ALT)
+    //var selected = d3.selectAll("." + props.NAME_ALT)
+    var selected = d3.selectAll("." + props.NAME_ALT.replace("'", "\\'")) // debug syntax error for counties containing single quote like O'Brien
         .style("stroke", "black")
         .style("stroke-width", "2");
     setLabel(props, firstVariable, secondVariable);
@@ -353,7 +356,8 @@
   
   //function to reset the element style on mouseout
   function dehighlight(props){
-    var selected = d3.selectAll("." + props.NAME_ALT)
+    //var selected = d3.selectAll("." + props.NAME_ALT)
+    var selected = d3.selectAll("." + props.NAME_ALT.replace("'", "\\'")) // debug syntax error for counties containing single quote like O'Brien
         .style("stroke", function(){
             return getStyle(this, "stroke")
         })
