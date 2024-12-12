@@ -119,7 +119,7 @@
             };
         };
     }
-    return countiesUS
+    return countiesUS;
   }; // end of function joinData
   
   function makeColorScale(csvData) {
@@ -152,7 +152,7 @@
   
     // Modify the global colorScale variable
     var colorScale= d3.scaleOrdinal()
-      .domain(d3.range(numQuantiles * numQuantiles))
+    .domain(d3.range(numQuantiles * numQuantiles))
       .range([
         "#e8e8e8","#ace4e4","#5ac8c8",
         "#dfb0d6","#a5add3","#5698b9",
@@ -186,9 +186,15 @@
       .style("fill", function(d) {
         // Combine data values for both variables
         var combinedValue = [d.properties[firstVariable], d.properties[secondVariable]];
+          if(combinedValue) {
+            return colorScale(combinedValue);
+          }  else {
+              return "#ccc";
+          }
+        
         //return colorScale(combinedValue); 
-        var color = colorScale(combinedValue);
-        d3.select(this).style("fill", color);  // Update style directly       
+        //var color = colorScale(combinedValue);
+        //d3.select(this).style("fill", color);  // Update style directly       
         // Use the color scale to get the fill color
         //var fillColor = makeColorScale(combinedValue);        
         //return fillColor || "#ccc"; // Default color for missing data
@@ -273,7 +279,7 @@
               //return makeColorScale([d.properties[firstVariable], d.properties[secondVariable]]);
               //return colorScale(combinedValue);
               var color = colorScale(combinedValue);
-              console.log("County:", d.properties.NAME_ALT, "Combined Value:", combinedValue, "Color:", color);
+              //console.log("County:", d.properties.NAME_ALT, "Combined Value:", combinedValue, "Color:", color);
               d3.select(this).style("fill", color);  // Update style directly
             } else {
               console.warn("Missing or invalid value for:", d.properties.CODE_LOCAL)
