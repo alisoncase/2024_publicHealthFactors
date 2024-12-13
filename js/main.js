@@ -277,10 +277,10 @@
           var combinedValue = [d.properties[firstVariable], d.properties[secondVariable]];
           if(combinedValue) {
               //return makeColorScale([d.properties[firstVariable], d.properties[secondVariable]]);
-              //return colorScale(combinedValue);
-              var color = colorScale(combinedValue);
+              return colorScale(combinedValue);
+              //var color = colorScale(combinedValue);
               //console.log("County:", d.properties.NAME_ALT, "Combined Value:", combinedValue, "Color:", color);
-              d3.select(this).style("fill", color);  // Update style directly
+              //d3.select(this).style("fill", color);  // Update style directly
               //return color
             } else {
               console.warn("Missing or invalid value for:", d.properties.CODE_LOCAL)
