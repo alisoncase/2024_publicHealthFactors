@@ -290,14 +290,12 @@
           if(combinedValue) {
               //return makeColorScale([d.properties[firstVariable], d.properties[secondVariable]]);
               return colorScale(combinedValue);
-              //var color = colorScale(combinedValue);
+              //var color = colorScale(combinedValue); Use this line and following lines to examine results, when needed
               //console.log("County:", d.properties.NAME_ALT, "Combined Value:", combinedValue, "Color:", color);
-              //d3.select(this).style("fill", color);  // Update style directly
               //return color
             } else {
               console.warn("Missing or invalid value for:", d.properties.CODE_LOCAL)
               return "#ccc";
-              //d3.select(this).style("fill", "#ccc");
             }
         })
         .on("mouseover", function(event, d){
