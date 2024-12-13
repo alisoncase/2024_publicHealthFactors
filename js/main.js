@@ -1,3 +1,7 @@
+// This JS files contains the main functions for a bivariate choropleth map
+// that displays health outcomes and health risk behaviors for each county in the United States.
+// It uses D3.js to create the map and handle user interactions.
+
 //Wrap everything in a self-executing anonymous function to move to local scope
 (function(){
  
@@ -19,8 +23,8 @@
     "physical_inactivity",
     "short_sleep_duration"]; // list of attributes
   // Set initial variables
-  var initialFirstVariable = attrArray[10];
-  var initialSecondVariable = attrArray[14];
+  var initialFirstVariable = attrArray[10]; // obesity
+  var initialSecondVariable = attrArray[14]; // physical_inactivity
 
   //begin script when window loads
   window.onload = setMap();
@@ -33,7 +37,7 @@
     height = 600;
   
     // Create new svg container for the main U.S. map
-    var mainMap = d3.select("body") 
+    var mainMap = d3.select("#mainMap") 
       .append("svg")
       .attr("class", "mainMap")
       .attr("d", path) 
@@ -53,25 +57,26 @@
     var promises = [];    
       promises.push(d3.csv("data/public_health_data.csv")); //load attributes from csv    
       promises.push(d3.json("data/countiesNew.topojson")); //load counties spatial data, includes counties and CT COGS
+      promises.push(d3.json("data/states.topojson")); // load states spatial data
       Promise.all(promises).then(callback);
 
       function callback(data) {
-          var csvData = data[0], counties = data[1]; 
+          var csvData = data[0], counties = data[1], states = data[2];
           
         //translate TopoJSON polygons
         var countiesUS = topojson.feature(counties, counties.objects.countiesNew2).features;
+        var statesUS = topojson.feature(states, states.objects.states)
           
         //join csv data to GeoJSON enumeration units
         countiesUS = joinData(countiesUS, csvData);
             //examine the results
             console.log(countiesUS)
-  
-        //add states to map, if using counties albers file
-        // consider if/how to use D3 mesh function for state outlines instead
-        //var states = mainMap.append("path")
-        //.datum(countiesUS)
-        //.attr("class", "states")
-        //.attr("d", path);
+
+        //add state boundaries to map
+        var statesUS = mainMap.append("path")
+          .datum(statesUS)
+          .attr("class", "states")
+          .attr("d", path);
 
         //add dropdown menu for attribute selection
         createDropdown(csvData);
@@ -91,7 +96,7 @@
   }; //end of setMap()
   
   function joinData(countiesUS, csvData){
-    //loop through csv to assign each set of csv attribute values to geojson region
+    //loop through csv to assign each set of csv attribute values to geojson county
     for (var i=0; i<csvData.length; i++){
         var csvCounty = csvData[i]; //the current county
         csvKey = csvCounty.id;
@@ -115,12 +120,13 @@
     return countiesUS;
   }; // end of function joinData
   
+  // create color scale generator
   function makeColorScale(csvData, firstVariable, secondVariable) {
     // Create quintile breaks for each variable
     var numQuintiles = 5;
     var numColors = 3;
-    const firstValues = [];
-    const secondValues = [];
+    var firstValues = [];
+    var secondValues = [];
     for (let i = 0; i < csvData.length; i++) {
       var dataPoint = csvData[i];
       firstValues.push(parseFloat(dataPoint[firstVariable]));
@@ -146,12 +152,12 @@
         "0,0", "0,1", "0,2",
         "1,0", "1,1", "1,2",
         "2,0", "2,1", "2,2"
-      ])
+      ]) // domain of all possible combinations of quintiles
       .range([
         "#e8e8e8", "#ace4e4", "#5ac8c8",
         "#dfb0d6", "#a5add3", "#5698b9",
         "#be64ac", "#8c62aa", "#3b4994"
-      ]);
+      ]); // range of colors using blue-purple color scheme
   
     return (d) => {
       var firstQuintile = firstQuintiles(d[firstVariable]);
@@ -159,37 +165,37 @@
       var mappedFirstQuintile = mapToThree(firstQuintile);
       var mappedSecondQuintile = mapToThree(secondQuintile);
       var quintilePair = [mappedFirstQuintile, mappedSecondQuintile];
-      //console.log(`First quintile for ${d.CODE_LOCAL}:`, firstQuintile); // Debug statement
-      //console.log(`Second quintile for ${d.CODE_LOCAL}:`, secondQuintile); // Debug statement
-      //console.log(`Mapped first quintile for ${d.CODE_LOCAL}:`, mappedFirstQuintile); // Debug statement
-      //console.log(`Mapped second quintile for ${d.CODE_LOCAL}:`, mappedSecondQuintile); // Debug statement
-      //console.log(`Quintile pair for ${d.CODE_LOCAL}:`, quintilePair); // Debug statement
+      //console.log(`First quintile for ${d.CODE_LOCAL}:`, firstQuintile); // Use for debugging
+      //console.log(`Second quintile for ${d.CODE_LOCAL}:`, secondQuintile); // Use for debugging
+      //console.log(`Mapped first quintile for ${d.CODE_LOCAL}:`, mappedFirstQuintile); // Use for debugging
+      //console.log(`Mapped second quintile for ${d.CODE_LOCAL}:`, mappedSecondQuintile); // Use for debugging
+      //console.log(`Quintile pair for ${d.CODE_LOCAL}:`, quintilePair); // Use for debugging
       return bivariateColorScale(quintilePair.join(","));
     };
   };
   
   function updateMap(csvData, firstVariable, secondVariable, colorScale) {
-    //console.log("updateMap called with variables:", firstVariable, secondVariable); // Debug statement
+    //console.log("updateMap called with variables:", firstVariable, secondVariable); // Use for debugging
     // Update colors of enumeration units
     var counties = d3.selectAll(".counties");
-    console.log("Selected counties:", counties.size()); // Debug statement
     counties.transition()
-      .duration(1000)
+      .duration(300)
       .style("fill", function(d) {
-        // Combine data values for both variables
+        // Combine data values for both variables and check for null values
         var combinedValue = [d.properties[firstVariable], d.properties[secondVariable]];
-        //console.log(`Combined value for ${d.properties.CODE_LOCAL}:`, combinedValue); // Debug statement
+        //console.log(`Combined value for ${d.properties.CODE_LOCAL}:`, combinedValue); // Use for debugging
         if (d.properties[firstVariable] != null && d.properties[secondVariable] != null) {
           var color = colorScale(d.properties);
-          //console.log(`Updated color for ${d.properties.CODE_LOCAL}:`, color); // Debug statement
+          //console.log(`Updated color for ${d.properties.CODE_LOCAL}:`, color); // Use for debugging
           return color;
         } else {
-          //console.warn(`Missing or invalid value for ${d.properties.CODE_LOCAL}`); // Debug statement
+          //console.warn(`Missing or invalid value for ${d.properties.CODE_LOCAL}`); // Use for debugging
           return "#ccc";
         }
       });
   }// end of function updateMap
   
+  // Create dropdown menus for selecting variables
   function createDropdown(csvData) {
     // Access existing HTML elements with D3.js
     var dropdownContainer = d3.select("#dropdown-container");
@@ -243,10 +249,10 @@
     function handleDropdownChange() {
       firstVariable = d3.select("#dropdown-set1").property("value");
       secondVariable = d3.select("#dropdown-set2").property("value");
-      console.log(`Selected first variable: ${firstVariable}`); // Debug statement
-      console.log(`Selected second variable: ${secondVariable}`); // Debug statement
+      //console.log(`Selected first variable: ${firstVariable}`); // Use for debugging
+      //console.log(`Selected second variable: ${secondVariable}`); // Use for debugging
       var colorScale = makeColorScale(csvData, firstVariable, secondVariable);
-      console.log("Calling updateMap"); // Debug statement
+      // console.log("Calling updateMap"); // Use for debugging
       updateMap(csvData, firstVariable, secondVariable, colorScale);
       // Update event listeners for highlighting with new variables
       d3.selectAll(".counties")
@@ -262,27 +268,35 @@
     dropdown2.on("change", handleDropdownChange);
   }; // end of function createDropdown
   
+  // Create enumeration units
   function setEnumerationUnits(countiesUS, mainMap, path, colorScale, firstVariable, secondVariable){
-  
     //add counties to map
     var enumerationUnits = mainMap.selectAll(".counties")
         .data(countiesUS)
         .enter()
         .append("path")
         .attr("class", function(d){
-            return "counties " + d.properties.CODE_LOCAL; // Ensure the class is correctly applied
+            var className = "counties " + d.properties.NAME_ALT.replace("'", "\\'");
+            return className; // debugs syntax error for counties containing single quote like O'Brien
         })
         .attr("d", path)
         .style("fill", function(d) {
           var combinedValue = [d.properties[firstVariable], d.properties[secondVariable]];
           if (d.properties[firstVariable] != null && d.properties[secondVariable] != null) {
             var color = colorScale(d.properties);
-            //console.log(`Initial color for ${d.properties.CODE_LOCAL}:`, color); // Debug statement
             return color;
           } else {
             console.warn("Missing or invalid value for:", d.properties.CODE_LOCAL);
             return "#ccc";
           }
+        })
+        .each(function(d) {
+            // Save the initial styles in a <desc> element
+            var initialStyle = {
+                stroke: d3.select(this).style("stroke"),
+                "stroke-width": d3.select(this).style("stroke-width")
+            };
+            d3.select(this).append("desc").text(JSON.stringify(initialStyle));
         })
         .on("mouseover", function(event, d){
             highlight(d.properties, firstVariable, secondVariable);
@@ -294,7 +308,7 @@
   };  // end of function setEnumerationUnits
   
     
-  //function to create dynamic label
+  // create dynamic label
   function setLabel(props, firstVariable, secondVariable){
     //label content
     var labelAttribute = `
@@ -310,7 +324,7 @@
         .attr("class", "infolabel")
         .html(labelAttribute);
   
-  };
+  }; // end of function setLabel
   
   //function to move info label with mouse
   function moveLabel(event){
@@ -334,40 +348,41 @@
     d3.select(".infolabel")
         .style("left", x + "px")
         .style("top", y + "px");
-  };
+  }; // end of function moveLabel
       
   //function to highlight enumeration units
   function highlight(props, firstVariable, secondVariable){
     //change stroke
-    var selected = d3.selectAll("." + props.NAME_ALT.replace("'", "\\'")) // debug syntax error for counties containing single quote like O'Brien
-        .style("stroke", "black")
-        .style("stroke-width", "2");
+    var className = props.NAME_ALT.replace("'", "\\'");
+    var selected = d3.selectAll("." + className); // debug syntax error for counties containing single quote like O'Brien
+    selected.style("stroke", "black")
+            .style("stroke-width", "2");
     setLabel(props, firstVariable, secondVariable);
-  };
-  
-  //function to reset the element style on mouseout
-  function dehighlight(props){
-    var selected = d3.selectAll("." + props.NAME_ALT.replace("'", "\\'")) // debug syntax error for counties containing single quote like O'Brien
-        .style("stroke", function(){
-            return getStyle(this, "stroke")
-        })
-        .style("stroke-width", function(){
-            return getStyle(this, "stroke-width")
-        });
-  
+}; // end of function highlight
+
+//function to reset the element style on mouseout
+function dehighlight(props){
+    var className = props.NAME_ALT.replace("'", "\\'");
+    var selected = d3.selectAll("." + className); // debug syntax error for counties containing single quote like O'Brien
+    selected.style("stroke", function(){
+                return getStyle(this, "stroke");
+            })
+            .style("stroke-width", function(){
+                return getStyle(this, "stroke-width");
+            });
+
     function getStyle(element, styleName){
         var styleText = d3.select(element)
             .select("desc")
             .text();
-  
+
         var styleObject = JSON.parse(styleText);
-  
+
         return styleObject[styleName];
     };
     //remove info label
-    d3.select(".infolabel")
-    .remove();
-  };
+    d3.select(".infolabel").remove();
+}; // end of function dehighlight
 
   // Create bivariate legend
   function createLegend() {
@@ -380,9 +395,11 @@
       .attr("width", legendWidth + legendMargin.left + legendMargin.right)
       .attr("height", legendHeight + legendMargin.top + legendMargin.bottom);
   
+    // rotate the legen group to make a diamond shape 
     var legendGroup = svg.append("g")
       .attr("transform", "translate(" + (legendWidth / 2 + legendMargin.left) + "," + (legendHeight / 2 + legendMargin.top) + ") rotate(-45)");
   
+    // set the color scale for the legend  
     var colorScale = d3.scaleOrdinal()
       .domain([
         "0,0", "0,1", "0,2",
@@ -414,14 +431,49 @@
       .attr("x", legendWidth / 2 + legendMargin.left)
       .attr("y", legendHeight + legendMargin.top + 5)
       .style("text-anchor", "middle")
-      .text("Low");
+      .call(wrapText, "Low Health Outcome - Low Risk Behavior");
 
     svg.append("text")
       .attr("x", legendWidth / 2 + legendMargin.left)
       .attr("y", legendMargin.top - 5) 
       .style("text-anchor", "middle")
-      .text("High");
-  }   
+      .call(wrapText, "High Health Outcome - High Risk Behavior");
+
+    svg.append("text")
+      .attr("x", legendMargin.left - 10)
+      .attr("y", legendHeight / 2 + legendMargin.top)
+      .style("text-anchor", "middle")
+      .call(wrapText, "High Health Outcome - Low Risk Behavior");
+
+    svg.append("text")
+      .attr("x", legendWidth + legendMargin.right + 10)
+      .attr("y", legendHeight / 2 + legendMargin.top)
+      .style("text-anchor", "middle")
+      .call(wrapText, "High Risk Behavior - Low Health Outcome");
+  } // end of create legend function
+
+  // Wrap the text on the legend labels to prevent overflow
+  function wrapText(text, content) {
+      var words = content.split(" ");
+      var line = [];
+      var lineNumber = 0;
+      var lineHeight = 1.1; // ems
+      var y = text.attr("y");
+      var x = text.attr("x");
+      var dy = 0;
+      var tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em");
+      words.forEach(function(word) {
+          line.push(word);
+          tspan.text(line.join(" "));
+          if (tspan.node().getComputedTextLength() > 100) {
+              line.pop();
+              tspan.text(line.join(" "));
+              line = [word];
+              tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+          }
+      });
+  } //end of wrap text function
+  
   })();
 
 

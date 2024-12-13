@@ -2,10 +2,12 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width">
-            <title>Exploration of Public Health Factors in the United States</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Exploration of Public Health Factors in the United States</title>
 
-        <!--put your external stylesheet links here-->
+        <!-- Bootstrap CSS -->
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Custom CSS -->
         <link rel="stylesheet" href="css/style.css">
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
         <!--[if IE<9]>
@@ -17,27 +19,44 @@
         
     </head>
 
-    <body>
-        <h1>Public Health Outcomes and Risk Behaviors</h1>
-        <h2>An Exploration of the Links between Various Health Factors in the United States</h2>
-        <div id="dropdown-container">
-            <label for="dropdown-set1">Health Outcomes:</label>
-            <select id="dropdown-set1"></select>
-          
-            <label for="dropdown-set2">Health Risk Behaviors:</label>
-            <select id="dropdown-set2"></select>
+    <body class="d-flex flex-column min-vh-100">
+        <div class="container flex-grow-1">
+            <div class="header-container text-center my-4"> 
+                <h1>Public Health Outcomes and Risk Behaviors</h1>
+                <h2>An Exploration of the Links between Various Health Factors in the United States</h2>
+                <h3>Powered by data from the <a href="https://www.cdc.gov/places/index.html">CDC's Places Data</a>, this map 
+                    shows the age-adjusted prevalence rates for several health outcomes (i.e., chronic diseases) and health 
+                    risk behaviors. By selecting a different item from the two dropdown menus, you can view the relationship 
+                    between the different health outcomes and health risk behaviors. This information can help communities 
+                    pinpoint local health challenges, target disparities, understand interconnected needs, guide resource 
+                    allocations, and set meaningful health goals.</h3>
+            </div>
+            <div id="dropdown-container" class="row justify-content-center mb-4">
+                <div class="col-md-4">
+                    <label for="dropdown-set1">Health Outcomes:</label>
+                    <select id="dropdown-set1" class="form-control"></select>
+                </div>
+                <div class="col-md-4">
+                    <label for="dropdown-set2">Health Risk Behaviors:</label>
+                    <select id="dropdown-set2" class="form-control"></select>
+                </div>
+            </div>
+            <div class="row justify-content-center mb-4">
+                <div class="col-md-8 mb-4">
+                    <div id="mainMap" class="w-100 h-100"></div>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <div id="legend-container" class="w-100 h-100"></div>
+                </div>
+            </div>
         </div>
-        <div id="legend-container"></div> <!-- Add this container for the legend -->
-        <!--<div id="map-container"></div>  -->      
-        <div id="mainMap"></div>
-        <!--<img src="img/BivariateLegend.svg" alt="Legend" id="legend-image">--> 
-        <div class="content no-margin">
-            <div class="center">
-                <div class="credits">
-                    <p><b>Created by</b>
+        <footer class="footer mt-auto py-3 bg-light">
+            <div class="container">
+                <div class="credits text-center">
+                    <p>Created by
                         <a href="https://github.com/alisoncase">Alison Case </a>and <a href="https://github.com/lenmkendall">Leonard Kendall </a>
-                            for GEOG 575 at the University of Wisconsin-Madison, December 2024.
-                        </p>
+                        for GEOG 575 at the University of Wisconsin-Madison, December 2024.
+                    </p>
                     <p><b>Credits:</b></p>
                     <p>Map created with 
                         <a href="https://d3js.org/">D3</a></p>
@@ -47,20 +66,22 @@
                         <a href="https://www.naturalearthdata.com/"> Natural Earth</a> and the <a href="https://geodata.ct.gov/"> Connecticut GIS Office</a></p>
                 </div>
             </div>
+        </footer>
+
+        <!-- Bootstrap JS and dependencies -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
         <!-- Include the D3.js library from a CDN -->
-         <script src="https://d3js.org/d3.v7.min.js"></script>
-
-         <!-- Include topojson library? Unsure if this is needed but I saw it somewhere-->
-         <script src="https://unpkg.com/topojson@3"></script>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <!-- Include topojson library -->
+        <script src="https://unpkg.com/topojson@3"></script>
         <!-- Include the d3-geo-projection library from a CDN -->
-         <script src="https://d3js.org/d3-geo-projection.v3.min.js"></script>
-         <script type="text/javascript" src="lib/topojson.js"></script>
+        <script src="https://d3js.org/d3-geo-projection.v3.min.js"></script>
+        <script type="text/javascript" src="lib/topojson.js"></script>
         <script type="text/javascript" src="lib/jquery-3.5.1.js"></script>
-        <!--<script type="text/javascript" src="lib/d3.v7.min.js"></script>-->
-        <script type="text/javascript" src="lib/plot.min.js"></script>
         <script type="text/javascript" src="js/main.js"></script>
-        <!--<script type="text/javascript" src="js/LK-duplicate.js"></script>-->
         <script src="https://unpkg.com/simple-statistics@7.8.3/dist/simple-statistics.min.js"></script>
     </body>
 </html>
