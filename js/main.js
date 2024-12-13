@@ -284,8 +284,8 @@
               //return color
             } else {
               console.warn("Missing or invalid value for:", d.properties.CODE_LOCAL)
-              //return "#ccc";
-              d3.select(this).style("fill", "#ccc");
+              return "#ccc";
+              //d3.select(this).style("fill", "#ccc");
             }
         })
         .on("mouseover", function(event, d){
