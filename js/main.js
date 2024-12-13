@@ -1,12 +1,6 @@
 //Wrap everything in a self-executing anonymous function to move to local scope
 (function(){
-
-  //Global variables
-  //var dataset = d3.csv("data/public_health_data.csv")
-  //var topology = d3.json("data/counties_albers_10m.topojson")
-  //var topology = d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/counties-albers-10m.json')
-  //var topology = d3.json("data/counties.topojson") 
-  
+ 
   //pseudo-global variables 
   var attrArray = ["teeth_lost", 
     "arthritis", 
@@ -39,10 +33,10 @@
     height = 600;
   
     // Create new svg container for the main U.S. map
-    var mainMap = d3.select("body") //originally said "body" changed to "mainMap"
+    var mainMap = d3.select("body") 
       .append("svg")
       .attr("class", "mainMap")
-      .attr("d", path) // This was commented out, but now added back in to define the path of the map container
+      .attr("d", path) 
       .attr("width", width)
       .attr("height", height);
   
@@ -50,9 +44,6 @@
     var projection = d3.geoAlbersUsa()
       .scale(1100)
       .translate([width / 2, height / 2]);
-      //use the following for counties albers file
-      //.scale(1300)
-      //.translate([487.5, 305]);
   
     // Set spatial data path
     var path = d3.geoPath()
@@ -86,21 +77,23 @@
         createDropdown(csvData);
         
         // Call makeColorScale to create the initial color scale
-        var colorScale = makeColorScale(csvData); //this was commented out for some reason, not sure if it needs to be
+        var colorScale = makeColorScale(csvData, initialFirstVariable, initialSecondVariable); 
         
         //add enumeration units to the map
         setEnumerationUnits(countiesUS, mainMap, path, colorScale, initialFirstVariable, initialSecondVariable);
 
         // Call updateMap with the color scale as an argument
-       // updateMap(csvData, initialFirstVariable, initialSecondVariable, colorScale);
+        updateMap(csvData, initialFirstVariable, initialSecondVariable, colorScale); 
     };
+
+    // Call createLegend to create the legend
+    createLegend();
   }; //end of setMap()
   
   function joinData(countiesUS, csvData){
     //loop through csv to assign each set of csv attribute values to geojson region
     for (var i=0; i<csvData.length; i++){
         var csvCounty = csvData[i]; //the current county
-        //var csvKey = csvCounty.id; //the CSV primary key 
         csvKey = csvCounty.id;
   
         //loop through geojson counties to find correct county id
@@ -122,84 +115,80 @@
     return countiesUS;
   }; // end of function joinData
   
-  function makeColorScale(csvData) {
-  
-    // Create quantile breaks for each variable
-    var numQuantiles = 3;
+  function makeColorScale(csvData, firstVariable, secondVariable) {
+    // Create quintile breaks for each variable
+    var numQuintiles = 5;
+    var numColors = 3;
     const firstValues = [];
     const secondValues = [];
-      for (let i = 0; i < csvData.length; i++) {
-        var dataPoint = csvData[i];
-        firstValues.push(dataPoint[initialFirstVariable]);
-        secondValues.push(dataPoint[initialSecondVariable]);
-   }
-   var firstQuantiles = d3.scaleQuantile()
-     .domain(firstValues)
-      .range(d3.range(numQuantiles));
-  
-    var secondQuantiles = d3.scaleQuantile()
-      .domain(secondValues)
-      .range(d3.range(numQuantiles));
-  
-    // Combine quantile values into a single bivariate array
-    const bivariateValues = [];
-    for (let i = 0; i < firstValues.length; i++) {
-      bivariateValues.push([
-        firstQuantiles(firstValues[i]),
-        secondQuantiles(secondValues[i])
-      ]);
+    for (let i = 0; i < csvData.length; i++) {
+      var dataPoint = csvData[i];
+      firstValues.push(parseFloat(dataPoint[firstVariable]));
+      secondValues.push(parseFloat(dataPoint[secondVariable]));
     }
+    // Sort the values to ensure correct quintile calculation
+    firstValues.sort(d3.ascending);
+    secondValues.sort(d3.ascending);
+    var firstQuintiles = d3.scaleQuantile()
+      .domain(firstValues)
+      .range(d3.range(numQuintiles));
   
-    // Modify the global colorScale variable
-    var colorScale= d3.scaleOrdinal()
-    .domain(d3.range(numQuantiles * numQuantiles))
+    var secondQuintiles = d3.scaleQuantile()
+      .domain(secondValues)
+      .range(d3.range(numQuintiles));
+  
+    // Map quintiles to a range of three
+    var mapToThree = (value) => Math.floor(value / (numQuintiles / numColors));
+  
+    // Create a bivariate color scale based on the mapped values
+    var bivariateColorScale = d3.scaleOrdinal()
+      .domain([
+        "0,0", "0,1", "0,2",
+        "1,0", "1,1", "1,2",
+        "2,0", "2,1", "2,2"
+      ])
       .range([
-        "#e8e8e8","#ace4e4","#5ac8c8",
-        "#dfb0d6","#a5add3","#5698b9",
-        "#be64ac","#8c62aa","#3b4994"]
-      );
-      console.log("First quantile breaks:", firstQuantiles.domain());
-      console.log("Second quantile breaks:", secondQuantiles.domain());
-      console.log("Color scale domain:", colorScale.domain());
-      console.log("Color scale range:", colorScale.range());
-    return colorScale;
-    //This block is potentially redundant. Commenting it out for debugging purposes.
-    // Define a function to assign colors based on quantile indices
-    //var getColor = (d) => {
-    //  var firstIndex = d[0];
-    //  var secondIndex = d[1];
-    //  var combinedIndex = firstIndex * numQuantiles + secondIndex;
-    //  return colorScale(combinedIndex);
-    //};
-    // Return the getColor function
-    //return getColor;
-  }; // end of function makeColorScale
+        "#e8e8e8", "#ace4e4", "#5ac8c8",
+        "#dfb0d6", "#a5add3", "#5698b9",
+        "#be64ac", "#8c62aa", "#3b4994"
+      ]);
+  
+    return (d) => {
+      var firstQuintile = firstQuintiles(d[firstVariable]);
+      var secondQuintile = secondQuintiles(d[secondVariable]);
+      var mappedFirstQuintile = mapToThree(firstQuintile);
+      var mappedSecondQuintile = mapToThree(secondQuintile);
+      var quintilePair = [mappedFirstQuintile, mappedSecondQuintile];
+      //console.log(`First quintile for ${d.CODE_LOCAL}:`, firstQuintile); // Debug statement
+      //console.log(`Second quintile for ${d.CODE_LOCAL}:`, secondQuintile); // Debug statement
+      //console.log(`Mapped first quintile for ${d.CODE_LOCAL}:`, mappedFirstQuintile); // Debug statement
+      //console.log(`Mapped second quintile for ${d.CODE_LOCAL}:`, mappedSecondQuintile); // Debug statement
+      //console.log(`Quintile pair for ${d.CODE_LOCAL}:`, quintilePair); // Debug statement
+      return bivariateColorScale(quintilePair.join(","));
+    };
+  };
   
   function updateMap(csvData, firstVariable, secondVariable, colorScale) {
-
-    var colorScale = makeColorScale(csvData);
+    //console.log("updateMap called with variables:", firstVariable, secondVariable); // Debug statement
     // Update colors of enumeration units
-    d3.selectAll(".counties")
-      .transition()
+    var counties = d3.selectAll(".counties");
+    console.log("Selected counties:", counties.size()); // Debug statement
+    counties.transition()
       .duration(1000)
       .style("fill", function(d) {
         // Combine data values for both variables
         var combinedValue = [d.properties[firstVariable], d.properties[secondVariable]];
-          if(combinedValue) {
-            return colorScale(combinedValue);
-          }  else {
-              return "#ccc";
-          }
-         
-
-        //return colorScale(combinedValue); 
-        //var color = colorScale(combinedValue);
-        //d3.select(this).style("fill", color);  // Update style directly       
-        // Use the color scale to get the fill color
-        //var fillColor = makeColorScale(combinedValue);        
-        //return fillColor || "#ccc"; // Default color for missing data
+        //console.log(`Combined value for ${d.properties.CODE_LOCAL}:`, combinedValue); // Debug statement
+        if (d.properties[firstVariable] != null && d.properties[secondVariable] != null) {
+          var color = colorScale(d.properties);
+          //console.log(`Updated color for ${d.properties.CODE_LOCAL}:`, color); // Debug statement
+          return color;
+        } else {
+          //console.warn(`Missing or invalid value for ${d.properties.CODE_LOCAL}`); // Debug statement
+          return "#ccc";
+        }
       });
-  };// end of function updateMap
+  }// end of function updateMap
   
   function createDropdown(csvData) {
     // Access existing HTML elements with D3.js
@@ -210,7 +199,6 @@
     // Initialize variables
     var firstVariable = "obesity";
     var secondVariable = "physical_inactivity";
-  
   
     dropdown1.selectAll("option")
       .data([
@@ -251,28 +239,27 @@
     // Set initial selected option for dropdown 2
     dropdown2.property("value", secondVariable);
   
-    // Add event listeners to the dropdowns - edited this to do the function in one move instead of 2
-    
+    // Add event listeners to the dropdowns    
     function handleDropdownChange() {
-      firstVariable = d3.select("dropdown-set1").property("value");
-      secondVariable = d3.select("dropdown-set2").property("value");
-      updateMap(csvData, firstVariable, secondVariable);
+      firstVariable = d3.select("#dropdown-set1").property("value");
+      secondVariable = d3.select("#dropdown-set2").property("value");
+      console.log(`Selected first variable: ${firstVariable}`); // Debug statement
+      console.log(`Selected second variable: ${secondVariable}`); // Debug statement
+      var colorScale = makeColorScale(csvData, firstVariable, secondVariable);
+      console.log("Calling updateMap"); // Debug statement
+      updateMap(csvData, firstVariable, secondVariable, colorScale);
+      // Update event listeners for highlighting with new variables
+      d3.selectAll(".counties")
+        .on("mouseover", function(event, d){
+            highlight(d.properties, firstVariable, secondVariable);
+        })
+        .on("mouseout", function(event, d){
+            dehighlight(d.properties);
+        });
     }
 
     dropdown1.on("change", handleDropdownChange);
     dropdown2.on("change", handleDropdownChange);
-    
-    
-    /*
-    dropdown1.on("change", () => {
-      firstVariable = d3.select("#dropdown-set1").property("value");
-      updateMap(csvData, firstVariable, secondVariable);
-    });
-  
-    dropdown2.on("change", () => {
-      secondVariable = d3.select("#dropdown-set2").property("value");
-      updateMap(csvData, firstVariable, secondVariable);
-    });*/
   }; // end of function createDropdown
   
   function setEnumerationUnits(countiesUS, mainMap, path, colorScale, firstVariable, secondVariable){
@@ -283,20 +270,19 @@
         .enter()
         .append("path")
         .attr("class", function(d){
-            return "counties" + d.properties.CODE_LOCAL;})
+            return "counties " + d.properties.CODE_LOCAL; // Ensure the class is correctly applied
+        })
         .attr("d", path)
         .style("fill", function(d) {
           var combinedValue = [d.properties[firstVariable], d.properties[secondVariable]];
-          if(combinedValue) {
-              //return makeColorScale([d.properties[firstVariable], d.properties[secondVariable]]);
-              return colorScale(combinedValue);
-              //var color = colorScale(combinedValue); Use this line and following lines to examine results, when needed
-              //console.log("County:", d.properties.NAME_ALT, "Combined Value:", combinedValue, "Color:", color);
-              //return color
-            } else {
-              console.warn("Missing or invalid value for:", d.properties.CODE_LOCAL)
-              return "#ccc";
-            }
+          if (d.properties[firstVariable] != null && d.properties[secondVariable] != null) {
+            var color = colorScale(d.properties);
+            //console.log(`Initial color for ${d.properties.CODE_LOCAL}:`, color); // Debug statement
+            return color;
+          } else {
+            console.warn("Missing or invalid value for:", d.properties.CODE_LOCAL);
+            return "#ccc";
+          }
         })
         .on("mouseover", function(event, d){
             highlight(d.properties, firstVariable, secondVariable);
@@ -304,11 +290,7 @@
         .on("mouseout", function(event, d){
             dehighlight(d.properties);
         })
-        .on("mousemove", moveLabel);        
-    // Commenting this out. It's residual code from Lab 2 that isn't necessary here since we only have one visualization.
-    // add style descriptor to each path
-    //var desc = enumerationUnits.append("desc")
-    //    .text('{"stroke": "#969696", "stroke-width": "1.5px"}');
+        .on("mousemove", moveLabel);       
   };  // end of function setEnumerationUnits
   
     
@@ -357,7 +339,6 @@
   //function to highlight enumeration units
   function highlight(props, firstVariable, secondVariable){
     //change stroke
-    //var selected = d3.selectAll("." + props.NAME_ALT)
     var selected = d3.selectAll("." + props.NAME_ALT.replace("'", "\\'")) // debug syntax error for counties containing single quote like O'Brien
         .style("stroke", "black")
         .style("stroke-width", "2");
@@ -366,7 +347,6 @@
   
   //function to reset the element style on mouseout
   function dehighlight(props){
-    //var selected = d3.selectAll("." + props.NAME_ALT)
     var selected = d3.selectAll("." + props.NAME_ALT.replace("'", "\\'")) // debug syntax error for counties containing single quote like O'Brien
         .style("stroke", function(){
             return getStyle(this, "stroke")
@@ -389,137 +369,60 @@
     .remove();
   };
 
-    //This block is from D3 bivariate example, and has been incporated into makeColorScale
-  // Function to calculate low to high thresholds for diabetes variable
-  //function diabetes_thresholds(d3,data){return(
-  //  d3.scaleQuantile(data.mainMap(d => d.diabetes), [0, 1, 2]).quantiles()
-  //  )};
-    
-    // Function to calculate low to high thresholds for obesity variable
-  //  function obesity_thresholds(d3,data){return(
-  //  d3.scaleQuantile(data.mainMap(d => d.obesity), [0, 1, 2]).quantiles()
-  //  )};
-    
-    // Function to read the {diabetes, obesity} value of a county and 
-    // return its class from low to high based on its value within the thresholds
-  //  function bivariateClass(diabetes_thresholds,obesity_thresholds)
-  //  {
-  //    const d = diabetes_thresholds;
-  //    const o = obesity_thresholds;
-  //    return (value) => {
-  //      const { diabetes: a, obesity: b } = value;
-  //      return [
-  //        isNaN(a) ? a : +(a > d[0]) + (a > d[1]),
-  //        isNaN(b) ? b : +(b > o[0]) + (b > o[1])
-  //      ];
-  //    };
-  //  };
-    
-    // Function to create color scheme
-  //  function scheme(){return(
-  //  ["#e8e8e8","#ace4e4","#5ac8c8",
-  //    "#dfb0d6","#a5add3","#5698b9",
-  //    "#be64ac","#8c62aa","#3b4994"]
-  //  )};
-    
-  // Set up function for bivariate legend, from https://observablehq.com/
-  //function chart(Plot,scheme,d3,label,data,topojson,us,bivariateClass,states,svg)
-  //{
-  //  const legend = Plot.plot({
-  //    color: {
-  //      range: scheme,
-  //      transform: ([a, b]) => 3 * a + b,
-  //      unknown: "#ccc" //
-  //    },
-  //    axis: null,
-  //    margin: 0,
-  //    inset: 18,
-  //    width: 106,
-  //    height: 106,
-  //    style: "overflow: visible;",
-  //    marks: [
-  //      Plot.dot(d3.cross([0, 1, 2], [0, 1, 2]), {
-  //        x: ([a, b]) => b - a,
-  //        y: ([a, b]) => b + a,
-  //        symbol: "square",
-  //        rotate: 45,
-  //       r: 14,
-  //        fill: (d) => d,
-  //        title: ([a, b]) => `Diabetes${label(a)}\nObesity${label(b)}`,
-  //        tip: true
-  //      }),
-  //      Plot.text(["Obesity →"], {
-  //        frameAnchor: "right",
-  //        fontWeight: "bold",
-  //        rotate: -45,
-  //        dy: 10
-  //      }),
-  //      Plot.text(["← Diabetes"], {
-  //        frameAnchor: "left",
-  //        fontWeight: "bold",
-  //        rotate: 45,
-  //        dy: 10
-  //      })
-  //    ]
-  //  });
+  // Create bivariate legend
+  function createLegend() {
+    var legendWidth = 120;
+    var legendHeight = 120;
+    var legendMargin = { top: 20, right: 10, bottom: 10, left: 10 };
   
-  //  const color = legend.scale("color");
-  //  const index = new Map(data.mainMap(({ county, ...rest }) => [county, rest]));
-  //  return Plot.plot({
-  //    width: 975,
-  //    height: 610,
-  //    projection: "identity",
-  //    color,
-  //    marks: [
-  //      Plot.geo(
-  //        topojson.feature(us, us.objects.counties),
-  //        Plot.centroid({
-  //          stroke: "white",
-  //          strokeWidth: 0.125,
-  //          fill: (d) => bivariateClass(index.get(d.id)),
-  //          title: (d) => {
-  //            const name = `${d.properties.name}, ${states.get(d.id.slice(0, 2)).name}`;
-  //            const value = index.get(d.id);
-  //            if (!value || (isNaN(value.diabetes) && isNaN(value.obesity)))
-  //              return `${name}\nno data`;
-  //            const [dc, oc] = bivariateClass(value);
-  //            return `${name}\n${
-  //              isNaN(value.diabetes) ? "No Data" : value.diabetes
-  //            }% Diabetes${label(dc)}\n${
-  //              isNaN(value.obesity) ? "No Data" : value.obesity
-  //            }% Obesity${label(oc)}`;
-  //          },
-  //          tip: true
-  //        })
-  //      ),
-  //      Plot.geo(topojson.mesh(us, us.objects.states, (a, b) => a !== b), {stroke: "white"}),
-  //      () => svg`<g transform="translate(835,410)">${legend}`
-  //    ],
-  //    style: "overflow: visible;"
-  //  });
-  //};
+    var svg = d3.select("#legend-container").append("svg") // Append to the new container
+      .attr("class", "legend")
+      .attr("width", legendWidth + legendMargin.left + legendMargin.right)
+      .attr("height", legendHeight + legendMargin.top + legendMargin.bottom);
   
-  // Set up labels
-  //function labels(){return(
-  //  ["low", "", "high"]
-  //  )};
-    
-  //function label(labels){return(
-  //  i => labels[i] ? ` (${labels[i]})` : ""
-  //  )};
+    var legendGroup = svg.append("g")
+      .attr("transform", "translate(" + (legendWidth / 2 + legendMargin.left) + "," + (legendHeight / 2 + legendMargin.top) + ") rotate(-45)");
   
-  // Set up variables for bivariate choropleth
-  //function dataVariables(dataset){return(dataset
-  //  .then((data) => {
-  //    data.forEach((d) => {
-  //      d.obesity = +d.obesity; 
-  //      d.diabetes = +d.diabetes;
-  //    });
-  //    return data;
-  //  })
-  //)};
+    var colorScale = d3.scaleOrdinal()
+      .domain([
+        "0,0", "0,1", "0,2",
+        "1,0", "1,1", "1,2",
+        "2,0", "2,1", "2,2"
+      ])
+      .range([
+        "#e8e8e8", "#ace4e4", "#5ac8c8",
+        "#dfb0d6", "#a5add3", "#5698b9",
+        "#be64ac", "#8c62aa", "#3b4994"
+      ]);
   
+    var legendData = d3.cross([0, 1, 2], [0, 1, 2]);
   
+    legendGroup.selectAll("rect")
+      .data(legendData)
+      .enter()
+      .append("rect")
+      .attr("x", function(d) { return (d[1] - 1) * 30; }) // Center the legend
+      .attr("y", function(d) { return (1 - d[0]) * 30; }) // Center the legend and flip y-axis
+      .attr("width", 30)
+      .attr("height", 30)
+      .style("fill", function(d) {
+        return colorScale(d.join(","));
+      });
+  
+    // Append non-rotated text labels outside the rotated group
+    svg.append("text")
+      .attr("x", legendWidth / 2 + legendMargin.left)
+      .attr("y", legendHeight + legendMargin.top + 5)
+      .style("text-anchor", "middle")
+      .text("Low");
+
+    svg.append("text")
+      .attr("x", legendWidth / 2 + legendMargin.left)
+      .attr("y", legendMargin.top - 5) 
+      .style("text-anchor", "middle")
+      .text("High");
+  }   
   })();
-  
-  
+
+
+

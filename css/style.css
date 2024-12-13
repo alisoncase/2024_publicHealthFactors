@@ -83,11 +83,17 @@ h2 {
   font-size: x-small;
   padding: 10px;
 }
-#legend-image {
+#legend-container {
   position: absolute;
-  right: 0;
   top: 50%;
-  transform: translateY(-15%);
-  width: 200px;
-  height: auto; 
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px; 
+  height: 180px; 
+  padding: 10px;
+}
+
+.legend {
+  width: 100%; 
+  height: 100%; 
 }
