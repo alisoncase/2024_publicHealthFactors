@@ -86,13 +86,13 @@
         createDropdown(csvData);
         
         // Call makeColorScale to create the initial color scale
-        var colorScale = makeColorScale(csvData);
+        var colorScale = makeColorScale(csvData); //this was commented out for some reason, not sure if it needs to be
         
         //add enumeration units to the map
         setEnumerationUnits(countiesUS, mainMap, path, colorScale, initialFirstVariable, initialSecondVariable);
 
         // Call updateMap with the color scale as an argument
-        //updateMap(csvData, initialFirstVariable, initialSecondVariable, colorScale);
+       // updateMap(csvData, initialFirstVariable, initialSecondVariable, colorScale);
     };
   }; //end of setMap()
   
@@ -177,8 +177,7 @@
   
   function updateMap(csvData, firstVariable, secondVariable, colorScale) {
 
-   // var colorScale = makeColorScale(csvData);
- 
+    var colorScale = makeColorScale(csvData);
     // Update colors of enumeration units
     d3.selectAll(".counties")
       .transition()
@@ -191,7 +190,8 @@
           }  else {
               return "#ccc";
           }
-        
+         
+
         //return colorScale(combinedValue); 
         //var color = colorScale(combinedValue);
         //d3.select(this).style("fill", color);  // Update style directly       
@@ -251,7 +251,19 @@
     // Set initial selected option for dropdown 2
     dropdown2.property("value", secondVariable);
   
-    // Add event listeners to the dropdowns
+    // Add event listeners to the dropdowns - edited this to do the function in one move instead of 2
+    
+    function handleDropdownChange() {
+      firstVariable = d3.select("dropdown-set1").property("value");
+      secondVariable = d3.select("dropdown-set2").property("value");
+      updateMap(csvData, firstVariable, secondVariable);
+    }
+
+    dropdown1.on("change", handleDropdownChange);
+    dropdown2.on("change", handleDropdownChange);
+    
+    
+    /*
     dropdown1.on("change", () => {
       firstVariable = d3.select("#dropdown-set1").property("value");
       updateMap(csvData, firstVariable, secondVariable);
@@ -260,7 +272,7 @@
     dropdown2.on("change", () => {
       secondVariable = d3.select("#dropdown-set2").property("value");
       updateMap(csvData, firstVariable, secondVariable);
-    });
+    });*/
   }; // end of function createDropdown
   
   function setEnumerationUnits(countiesUS, mainMap, path, colorScale, firstVariable, secondVariable){
