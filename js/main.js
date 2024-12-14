@@ -388,7 +388,7 @@ function dehighlight(props){
   function createLegend() {
     var legendWidth = 140;
     var legendHeight = 130;
-    var legendMargin = { top: 20, right: 40, bottom: 40, left: 60 };
+    var legendMargin = { top: 20, right: 44, bottom: 40, left: 60 };
   
     var svg = d3.select("#legend-container").append("svg") // Append to the new container
       .attr("class", "legend")
@@ -428,13 +428,13 @@ function dehighlight(props){
   
     // Append non-rotated text labels outside the rotated group
     svg.append("text")
-      .attr("x", legendWidth / 2 + legendMargin.left)
-      .attr("y", legendHeight + legendMargin.top + 5)
+      .attr("x", legendWidth / 1.5 + legendMargin.left)
+      .attr("y", legendHeight + legendMargin.top + 7)
       .style("text-anchor", "middle")
       .call(wrapText, "Low Health Outcome - Low Risk Behavior");
 
     svg.append("text")
-      .attr("x", legendWidth / 2 + legendMargin.left)
+      .attr("x", legendWidth / 1.5 + legendMargin.left)
       .attr("y", legendMargin.top - 5) 
       .style("text-anchor", "middle")
       .call(wrapText, "High Health Outcome - High Risk Behavior");
