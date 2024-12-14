@@ -49,7 +49,7 @@
             .center([0, 30.77])
             .rotate([91.81, 0, 0])
             .parallels([33.17, 28.94])
-            .scale(4000)
+            .scale(5000)
             .translate([width / 2, height / 2]);
     
       // Set spatial data path
