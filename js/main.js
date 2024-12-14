@@ -335,10 +335,10 @@
         .width;
   
     //use coordinates of mousemove event to set label coordinates
-    var x1 = event.clientX + 10,
-        y1 = event.clientY - 75,
-        x2 = event.clientX - labelWidth - 10,
-        y2 = event.clientY + 25;
+    var x1 = event.clientX + window.scrollX + 10
+    var y1 = event.clientY + window.scrollY - 75
+        //x2 = event.clientX - labelWidth - 10,
+        //y2 = event.clientY + 25;
   
     //horizontal label coordinate, testing for overflow
     var x = event.clientX > window.innerWidth - labelWidth - 20 ? x2 : x1; 
@@ -386,16 +386,16 @@ function dehighlight(props){
 
   // Create bivariate legend
   function createLegend() {
-    var legendWidth = 120;
-    var legendHeight = 120;
-    var legendMargin = { top: 20, right: 10, bottom: 10, left: 10 };
+    var legendWidth = 140;
+    var legendHeight = 130;
+    var legendMargin = { top: 20, right: 40, bottom: 40, left: 60 };
   
     var svg = d3.select("#legend-container").append("svg") // Append to the new container
       .attr("class", "legend")
       .attr("width", legendWidth + legendMargin.left + legendMargin.right)
       .attr("height", legendHeight + legendMargin.top + legendMargin.bottom);
   
-    // rotate the legen group to make a diamond shape 
+    // rotate the legend group to make a diamond shape 
     var legendGroup = svg.append("g")
       .attr("transform", "translate(" + (legendWidth / 2 + legendMargin.left) + "," + (legendHeight / 2 + legendMargin.top) + ") rotate(-45)");
   
