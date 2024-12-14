@@ -177,7 +177,7 @@
   function updateMap(csvData, firstVariable, secondVariable, colorScale) {
     //console.log("updateMap called with variables:", firstVariable, secondVariable); // Use for debugging
     // Update colors of enumeration units
-    var counties = d3.selectAll(".counties");
+    var counties = d3.selectAll("#mainMap .counties");
     counties.transition()
       .duration(300)
       .style("fill", function(d) {
@@ -215,6 +215,7 @@
         { value: "heart_disease", text: "Coronary heart disease among adults" },
         { value: "asthma", text: "Current asthma among adults" },
         { value: "depression", text: "Depression among adults" },
+        { value: "diabetes", text: "Diagnosed diabetes among adults" },
         { value: "high_blood_pressure", text: "High blood pressure among adults" },
         { value: "high_cholesterol", text: "High cholesterol among adults who have ever been screened" },
         { value: "obesity", text: "Obesity among adults" },
@@ -255,7 +256,7 @@
       // console.log("Calling updateMap"); // Use for debugging
       updateMap(csvData, firstVariable, secondVariable, colorScale);
       // Update event listeners for highlighting with new variables
-      d3.selectAll(".counties")
+      d3.selectAll("#mainMap .counties") // Ensure only mainMap counties are selected
         .on("mouseover", function(event, d){
             highlight(d.properties, firstVariable, secondVariable);
         })

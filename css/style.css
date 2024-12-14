@@ -49,6 +49,32 @@ h3 {
     padding: 0;
     height: 700px; 
 }
+#coloradoMap, #louisianaMap {
+    fill: none;
+    stroke: #a0a0a0;
+    stroke-width: 0.5px;
+    stroke-linecap: round;
+    position: relative;
+    border: none;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+    height: 600px; 
+    width: 100%; /* Ensure the maps take full width of their container */
+}
+#text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    height: 600px; /* Match the height of the maps */
+    width: 100%; /* Ensure the text container takes full width of its container */
+    text-align: center; /* Center the text */
+}
+.map-container {
+    padding: 10px; /* Add padding between the elements */
+}
 .counties {
     opacity: .8;
     stroke: #a0a0a0;
@@ -125,5 +151,4 @@ h3 {
   stroke-width: 1px;
   stroke-opacity: .8;
   stroke-linecap: round;
-
 }
