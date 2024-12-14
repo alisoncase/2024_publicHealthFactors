@@ -48,6 +48,7 @@ h3 {
     margin: 0;
     padding: 0;
     height: 700px; 
+    margin-right: 20px; /* Add margin to separate from legend */
 }
 #coloradoMap, #louisianaMap {
     fill: none;
@@ -61,6 +62,9 @@ h3 {
     padding: 0;
     height: 600px; 
     width: 100%; /* Ensure the maps take full width of their container */
+}
+#coloradoMap {
+    margin-right: 20px; /* Add margin to separate from text */
 }
 #text {
     display: flex;
@@ -99,6 +103,8 @@ h3 {
     top: -75px;
     font-family: 'Noto sans', sans-serif;
     font-size: .8em;
+    pointer-events: none; /* Prevent the label from interfering with mouse events */
+    z-index: 10; /* Ensure the label is on top of other elements */
 }
 .infolabel h1 {
     margin: 0 20px 0 0;
