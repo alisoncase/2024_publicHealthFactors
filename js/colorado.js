@@ -48,8 +48,8 @@
       var projection = d3.geoAlbers()
             .center([0, 39.275])
             .rotate([105.586, 0, 0])
-            .parallels([41.06, 36.96])
-            .scale(4000)
+            .parallels([41.5, 36.5])
+            .scale(5000)
             .translate([width / 2, height / 2]); 
     
       // Set spatial data path
@@ -233,10 +233,10 @@
           .width;
     
       //use coordinates of mousemove event to set label coordinates
-      var x1 = event.clientX + window.scrollX + 10
-      var y1 = event.clientY + window.scrollY - 75
-          //x2 = event.clientX - labelWidth - 10,
-          //y2 = event.clientY + 25;
+      var x1 = event.clientX + window.scrollX + 10;
+      var y1 = event.clientY + window.scrollY - 75;
+      var x2 = event.clientX - labelWidth - 10;
+      var y2 = event.clientY + 25;
     
       //horizontal label coordinate, testing for overflow
       var x = event.clientX > window.innerWidth - labelWidth - 20 ? x2 : x1; 
