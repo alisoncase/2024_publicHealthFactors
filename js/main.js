@@ -354,22 +354,26 @@
   function highlight(props, firstVariable, secondVariable){
     //change stroke
     var className = props.NAME_ALT.replace("'", "\\'");
-    var selected = d3.selectAll("." + className); // debug syntax error for counties containing single quote like O'Brien
-    selected.style("stroke", "black")
-            .style("stroke-width", "2");
+    var selected = d3.selectAll("." + className) // debug syntax error for counties containing single quote like O'Brien
+            .style("stroke", "black") 
+            .style("stroke-width", ".8")
+            .style("stroke-opacity", "1");
     setLabel(props, firstVariable, secondVariable);
 }; // end of function highlight
 
 //function to reset the element style on mouseout
 function dehighlight(props){
     var className = props.NAME_ALT.replace("'", "\\'");
-    var selected = d3.selectAll("." + className); // debug syntax error for counties containing single quote like O'Brien
-    selected.style("stroke", function(){
+    var selected = d3.selectAll("." + className) // debug syntax error for counties containing single quote like O'Brien
+            .style("stroke", function(){
                 return getStyle(this, "stroke");
             })
             .style("stroke-width", function(){
                 return getStyle(this, "stroke-width");
-            });
+            })
+            .style("stroke-opacity", function(){
+              return getStyle(this, "stroke-opacity");
+          });;
 
     function getStyle(element, styleName){
         var styleText = d3.select(element)
@@ -435,18 +439,18 @@ function dehighlight(props){
 
     svg.append("text")
       .attr("x", legendWidth / 1.5 + legendMargin.left)
-      .attr("y", legendMargin.top - 5) 
+      .attr("y", legendMargin.top - 7) 
       .style("text-anchor", "middle")
       .call(wrapText, "High Health Outcome - High Risk Behavior");
 
     svg.append("text")
-      .attr("x", legendMargin.left - 10)
+      .attr("x", 25 + legendMargin.left)
       .attr("y", legendHeight / 2 + legendMargin.top)
       .style("text-anchor", "middle")
       .call(wrapText, "High Health Outcome - Low Risk Behavior");
 
     svg.append("text")
-      .attr("x", legendWidth + legendMargin.right + 10)
+      .attr("x", legendWidth + legendMargin.right + 15)
       .attr("y", legendHeight / 2 + legendMargin.top)
       .style("text-anchor", "middle")
       .call(wrapText, "High Risk Behavior - Low Health Outcome");
